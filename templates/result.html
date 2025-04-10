@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screening Results</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Screening Results</h2>
+
+        {% if resumes %}
+        <table class="table table-bordered mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>Rank</th>
+                    <th>Candidate</th>
+                    <th>File Name</th>
+                    <th>Score</th>
+                    <th>Technical Skills</th>
+                    <th>Soft Skills</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resume in resumes %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ resume.name }}</td>
+                    <td>{{ resume.filename }}</td>
+                    <td>{{ resume.score }}</td>
+                    <td>{{ resume.technical_skills }}</td>
+                    <td>{{ resume.soft_skills }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-center mt-3">No results found. Please upload resumes.</p>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Upload More Resumes</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
