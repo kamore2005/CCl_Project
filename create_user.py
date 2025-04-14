@@ -5,7 +5,7 @@ import MySQLdb
 bcrypt = Bcrypt()
 
 # Connecting to MySQL Database
-db = MySQLdb.connect(host="localhost", user="root", passwd="kartik@2005", db="resume_screener")
+db = MySQLdb.connect(host="${{RAILWAY_PRIVATE_DOMAIN}}", user="root", passwd="EhfhfIbMbwyAJgQOvZfIjSWmAboHzcpZ", db="railway")
 cursor = db.cursor()
 
 # Setting Admin Credentials
