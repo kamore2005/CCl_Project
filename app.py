@@ -8,11 +8,11 @@ app = Flask(__name__)
 
 # ------------------ CONFIGURATION ------------------
 
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = '${{RAILWAY_PRIVATE_DOMAIN}}'
 app.config['MYSQL_USER'] = 'root'  
-app.config['MYSQL_PASSWORD'] = 'kartik@2005'  
-app.config['MYSQL_DB'] = 'resume_screener'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  
+app.config['MYSQL_PASSWORD'] = 'EhfhfIbMbwyAJgQOvZfIjSWmAboHzcpZ'  
+app.config['MYSQL_DB'] = 'railway'
+app.config['DB_PORT'] = '3306'  
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
