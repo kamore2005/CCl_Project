@@ -1,28 +1,25 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session
-from flask_mysqldb import MySQL
-from flask_bcrypt import Bcrypt
-import PyPDF2
 import re
+import PyPDF2
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_bcrypt import Bcrypt
+
+# Firebase Setup
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+cred = credentials.Certificate("serviceAccountKey.json")  # Your Firebase key
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 app = Flask(__name__)
-
-# ------------------ CONFIGURATION ------------------
-
-app.config['MYSQL_HOST'] = 'metro.proxy.rlwy.net'
-app.config['MYSQL_PORT'] = 11287
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'EhfhfIbMbwyAJgQOvZfIjSWmAboHzcpZ'
-app.config['MYSQL_DB'] = 'railway'
-
-mysql = MySQL(app)
 bcrypt = Bcrypt(app)
-app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # Use env var or fallback
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # Can be changed for production
 
 # ------------------ SKILL SETS ------------------
 
 TECHNICAL_SKILLS_SET = {
-    "python", "java", "sql", "react", "nlp", "flask", "AWS", "docker", "kubernetes",
+    "python", "java", "sql", "react", "nlp", "flask", "aws", "docker", "kubernetes",
     "machine learning", "deep learning", "data analysis", "html", "css", "javascript",
     "c++", "c#", "ruby", "php", "swift", "typescript", "go", "scala", "rust", "matlab",
     "r", "sas", "hadoop", "spark", "tableau", "powerbi", "excel", "git", "github",
@@ -43,7 +40,7 @@ SOFT_SKILLS_SET = {
     "self-regulation", "social skills", "resilience"
 }
 
-# ------------------ TEXT EXTRACTION ------------------
+# ------------------ PDF & SKILL LOGIC ------------------
 
 def extract_text_from_pdf(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
@@ -67,7 +64,7 @@ def extract_name(text):
                 return line
     return "Unknown"
 
-# ------------------ LOGIN SYSTEM ------------------
+# ------------------ AUTH ROUTES ------------------
 
 @app.route('/')
 def login_page():
@@ -78,16 +75,16 @@ def login():
     username = request.form['username']
     password = request.form['password']
 
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM users WHERE username=%s", (username,))
-    user = cur.fetchone()
-    cur.close()
+    doc_ref = db.collection("users").document(username)
+    doc = doc_ref.get()
 
-    if user and bcrypt.check_password_hash(user[2], password):  # user[2] for password column
-        session['username'] = username
-        return redirect(url_for("dashboard"))
-    else:
-        return "Invalid Credentials! Try Again."
+    if doc.exists:
+        user_data = doc.to_dict()
+        if bcrypt.check_password_hash(user_data['password'], password):
+            session['username'] = username
+            return redirect(url_for("dashboard"))
+
+    return "Invalid Credentials! Try Again."
 
 @app.route('/dashboard')
 def dashboard():
@@ -100,7 +97,7 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login_page'))
 
-# ------------------ RESUME UPLOAD ------------------
+# ------------------ RESUME SCORING ------------------
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
@@ -123,14 +120,14 @@ def upload_files():
             "name": name,
             "filename": file.filename,
             "score": score,
-            "technical_skills": ", ".join(technical_skills) if technical_skills else "No technical skills found",
-            "soft_skills": ", ".join(soft_skills) if soft_skills else "No soft skills found"
+            "technical_skills": ", ".join(technical_skills) or "No technical skills found",
+            "soft_skills": ", ".join(soft_skills) or "No soft skills found"
         })
 
     resumes_data.sort(key=lambda x: x["score"], reverse=True)
     return render_template("result.html", resumes=resumes_data)
 
-# ------------------ RUN APP ------------------
+# ------------------ MAIN ------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
