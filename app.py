@@ -9,11 +9,11 @@ app = Flask(__name__)
 
 # ------------------ CONFIGURATION ------------------
 
-app.config['MYSQL_HOST'] = os.getenv("metro.proxy.rlwy.net")
-app.config['MYSQL_USER'] = os.getenv("root")
-app.config['MYSQL_PASSWORD'] = os.getenv("EhfhfIbMbwyAJgQOvZfIjSWmAboHzcpZ")
-app.config['MYSQL_DB'] = os.getenv("railway")
-app.config['MYSQL_PORT'] = int(os.getenv("11287"))  # default port
+app.config['MYSQL_HOST'] = 'metro.proxy.rlwy.net'
+app.config['MYSQL_PORT'] = 11287
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'EhfhfIbMbwyAJgQOvZfIjSWmAboHzcpZ'
+app.config['MYSQL_DB'] = 'railway'
 
 mysql = MySQL(app)
 bcrypt = Bcrypt(app)
