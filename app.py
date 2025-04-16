@@ -1,20 +1,25 @@
 import os
 import re
+import json
 import PyPDF2
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_bcrypt import Bcrypt
 
-# Firebase Setup
+# ------------------ FIREBASE SETUP (using env variable) ------------------
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-cred = credentials.Certificate("serviceAccountKey.json")  # Your Firebase key
+firebase_key_json = os.getenv("FIREBASE_KEY_JSON")  # from Render's env variables
+cred = credentials.Certificate(json.loads(firebase_key_json))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# ------------------ FLASK APP INIT ------------------
+
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # Can be changed for production
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # optional
 
 # ------------------ SKILL SETS ------------------
 
@@ -40,7 +45,7 @@ SOFT_SKILLS_SET = {
     "self-regulation", "social skills", "resilience"
 }
 
-# ------------------ PDF & SKILL LOGIC ------------------
+# ------------------ TEXT EXTRACTION ------------------
 
 def extract_text_from_pdf(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
@@ -97,7 +102,7 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login_page'))
 
-# ------------------ RESUME SCORING ------------------
+# ------------------ RESUME UPLOAD ------------------
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
@@ -127,7 +132,7 @@ def upload_files():
     resumes_data.sort(key=lambda x: x["score"], reverse=True)
     return render_template("result.html", resumes=resumes_data)
 
-# ------------------ MAIN ------------------
+# ------------------ RUN ------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
