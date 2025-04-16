@@ -10,8 +10,14 @@ from flask_bcrypt import Bcrypt
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-firebase_key_json = os.getenv("FIREBASE_KEY_JSON")  # from Render's env variables
-cred = credentials.Certificate(json.loads(firebase_key_json))
+# Load the minified JSON string from Render's environment variable
+firebase_key_json = os.getenv("FIREBASE_KEY_JSON")
+
+# Convert JSON string to dictionary
+firebase_cred_dict = json.loads(firebase_key_json)
+
+# Initialize Firebase with the dict
+cred = credentials.Certificate(firebase_cred_dict)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -19,7 +25,7 @@ db = firestore.client()
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # optional
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # default for local dev
 
 # ------------------ SKILL SETS ------------------
 
